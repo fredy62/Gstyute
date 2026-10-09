@@ -91,9 +91,15 @@ export default {
         tokenLen: (env.BOT_TOKEN || "").length,
         tokenPrefix: (env.BOT_TOKEN || "").slice(0, 12),
       };
+      const me = await (await fetch("https://api.telegram.org/bot" + env.BOT_TOKEN + "/getMe")).json().catch(() => null);
+      out.getMeOk = !!(me && me.ok);
+      out.botUsername = (me && me.result && me.result.username) || null;
       if (u.searchParams.get("test") === "1") {
-        await send(926709204, "🔧 TEST DARI WORKER — kalau kamu lihat pesan ini, semuanya sudah benar!");
-        out.sent = true;
+        const r = await (await fetch(TG + "/sendMessage", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: 926709204, text: "🔧 TEST DARI WORKER — kalau kamu lihat ini, semua sudah benar!" }),
+        })).json().catch(() => null);
+        out.sent = !!(r && r.ok);
       }
       return new Response(JSON.stringify(out), { headers: { "Content-Type": "application/json" } });
     }
