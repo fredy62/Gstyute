@@ -101,14 +101,19 @@ export default {
         })).json().catch(() => null);
         out.sent = !!(r && r.ok);
       }
+      if (u.searchParams.get("simulate") === "1") {
+        const upd = { update_id: 1, message: { message_id: 1, from: { id: 926709204, first_name: "Fredy" }, chat: { id: 926709204, type: "private", first_name: "Fredy" }, date: 0, text: "/start" } };
+        ctx.waitUntil(proses(upd).catch((err) => console.log("simulate error:", err && err.message)));
+        out.simulated = true;
+      }
       return new Response(JSON.stringify(out), { headers: { "Content-Type": "application/json" } });
     }
 
-    console.log("request masuk | path match token:", path === BOT_TOKEN, "| hasToken:", !!env.BOT_TOKEN, "| hasApiKey:", !!env.API_KEY);
+    console.log("request masuk | method:", request.method, "| path match token:", path === BOT_TOKEN);
 
-    if (path === BOT_TOKEN) {
+    if (request.method === "POST") {
       const update = await request.json().catch(() => null);
-      if (update) {
+      if (update && (update.message || update.callback_query || update.update_id !== undefined)) {
         console.log("update diterima, memproses...");
         ctx.waitUntil(
           proses(update).catch((err) => console.log("proses error:", err && (err.stack || err.message || String(err)))),
