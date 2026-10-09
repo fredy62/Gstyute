@@ -84,10 +84,18 @@ export default {
     const path = new URL(request.url).pathname.slice(1);
 
     if (path === "__diag") {
-      return new Response(
-        JSON.stringify({ hasToken: !!env.BOT_TOKEN, hasApiKey: !!env.API_KEY }),
-        { headers: { "Content-Type": "application/json" } },
-      );
+      const u = new URL(request.url);
+      const out = {
+        hasToken: !!env.BOT_TOKEN,
+        hasApiKey: !!env.API_KEY,
+        tokenLen: (env.BOT_TOKEN || "").length,
+        tokenPrefix: (env.BOT_TOKEN || "").slice(0, 12),
+      };
+      if (u.searchParams.get("test") === "1") {
+        await send(926709204, "🔧 TEST DARI WORKER — kalau kamu lihat pesan ini, semuanya sudah benar!");
+        out.sent = true;
+      }
+      return new Response(JSON.stringify(out), { headers: { "Content-Type": "application/json" } });
     }
 
     console.log("request masuk | path match token:", path === BOT_TOKEN, "| hasToken:", !!env.BOT_TOKEN, "| hasApiKey:", !!env.API_KEY);
