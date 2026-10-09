@@ -81,9 +81,25 @@ export default {
       }
     }
 
-    if (new URL(request.url).pathname.slice(1) === BOT_TOKEN) {
+    const path = new URL(request.url).pathname.slice(1);
+
+    if (path === "__diag") {
+      return new Response(
+        JSON.stringify({ hasToken: !!env.BOT_TOKEN, hasApiKey: !!env.API_KEY }),
+        { headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    console.log("request masuk | path match token:", path === BOT_TOKEN, "| hasToken:", !!env.BOT_TOKEN, "| hasApiKey:", !!env.API_KEY);
+
+    if (path === BOT_TOKEN) {
       const update = await request.json().catch(() => null);
-      if (update) ctx.waitUntil(proses(update).catch(() => {}));
+      if (update) {
+        console.log("update diterima, memproses...");
+        ctx.waitUntil(
+          proses(update).catch((err) => console.log("proses error:", err && (err.stack || err.message || String(err)))),
+        );
+      }
     }
     return new Response("ok");
   },
